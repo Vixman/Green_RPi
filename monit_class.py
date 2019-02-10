@@ -1,12 +1,8 @@
 import Adafruit_DHT
-from datetime import datetime
-import csv
-import threading
-from threading import Thread
 from influxdb import InfluxDBClient
 from influxdb.client import InfluxDBClientError
 
-#w param klasy dodac Thread
+
 class Monit():
     def __init__(self):
         #Thread.__init__(self)
