@@ -1,2 +1,2 @@
 # Green_RPi
-Main repository for project purpose
+Purpose of this project is to observe and analyse growth of a plants in green house.
