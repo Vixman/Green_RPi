@@ -1,7 +1,8 @@
 import Adafruit_DHT
 from influxdb import InfluxDBClient
 from influxdb.client import InfluxDBClientError
-
+import paho.mqtt.client as mqtt
+import json
 
 class Monit():
     def __init__(self):
@@ -57,9 +58,25 @@ class Monit():
             self.client.write_points(json_body)
             self.client.write_points(json_body1)
             result = self.client.query('select value from hum;')
-            print result
-            time.sleep(20)
+            #print result
+            time.sleep(60)
 
 
-mon = Monit() 
-mon.dbcon()
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code {}".format(rc))
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.connect(hostname, port, timeout)
+client.loop_start()
+
+try:
+    while True:
+        mon = Monit() 
+        mon.dbcon()
+        dht22_data = {'temperature': 0, 'humidity': 0}
+        dht22_data[temperature] = mon.get_temp()
+        dht22_data[humidity] = mon.get_hum()
+        clinet.publish('/sensors/dht22/', json.dumps(dht22_data), 2)
+except KeyboardInterrupt:
+    pass
