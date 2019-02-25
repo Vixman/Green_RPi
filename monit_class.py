@@ -3,6 +3,7 @@ from influxdb import InfluxDBClient
 from influxdb.client import InfluxDBClientError
 import paho.mqtt.client as mqtt
 import json
+import time
 
 class Monit():
     def __init__(self):
@@ -12,8 +13,8 @@ class Monit():
         self.reads = Adafruit_DHT.read_retry(self.sensor, self.pin)
         self.temp = None
         self.humidity = None
-        self.client = InfluxDBClient(hostname, port, user,
-                                     passwd, dbname)
+        #self.client = InfluxDBClient(hostname, port, user,
+        #                            passwd, dbname)
         
     def get_temp(self):    
         self.temp = self.reads[1]
@@ -63,20 +64,28 @@ class Monit():
 
 
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code {}".format(rc))
+    if rc == 0: 
+        print("Connected to broker")
+        global Connected            
+        Connected = True                 
+    else: 
+        print("Connection failed")
 
 client = mqtt.Client()
 client.on_connect = on_connect
-client.connect(hostname, port, timeout)
+client.connect('vixman', 9001, 60)
 client.loop_start()
 
 try:
     while True:
         mon = Monit() 
-        mon.dbcon()
+        #mon.dbcon()
         dht22_data = {'temperature': 0, 'humidity': 0}
-        dht22_data[temperature] = mon.get_temp()
-        dht22_data[humidity] = mon.get_hum()
-        clinet.publish('/sensors/dht22/', json.dumps(dht22_data), 2)
+        dht22_data['temperature'] = mon.get_temp()
+        dht22_data['humidity'] = mon.get_hum()
+        client.publish('/sensors/dht22/', json.dumps(dht22_data), 2)
+        time.sleep(60)        
 except KeyboardInterrupt:
-    pass
+    print "exiting"
+    client.disconnect()
+    client.loop_stop()
