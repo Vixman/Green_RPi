@@ -73,7 +73,7 @@ def on_connect(client, userdata, flags, rc):
 
 client = mqtt.Client()
 client.on_connect = on_connect
-client.connect('vixman', 9001, 60)
+client.connect('vixman', 9001, 71)
 client.loop_start()
 
 try:
