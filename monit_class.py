@@ -13,8 +13,6 @@ class Monit():
         self.reads = Adafruit_DHT.read_retry(self.sensor, self.pin)
         self.temp = None
         self.humidity = None
-        #self.client = InfluxDBClient(hostname, port, user,
-        #                            passwd, dbname)
         
     def get_temp(self):    
         self.temp = self.reads[1]
@@ -23,44 +21,6 @@ class Monit():
     def get_hum(self):
         self.hum = self.reads[0]
         return self.hum
-
-    def dbcon(self):
-        while True:
-            
-            json_body = [
-            {
-                "measurement": "temperature",
-                "tags": {
-                    "location": "home rpi",
-                    "region": "Wro-PL"
-                },
-                "time": datetime.today(),
-                "fields":{
-                    "value": str(self.get_temp())
-                }
-            }
-        ]
-
-
-            json_body1 = [
-            {
-                "measurement": "hum",
-                "tags": {
-                    "location": "home rpi",
-                    "region": "Wro-PL"
-                },
-                "time": datetime.today(),
-                "fields":{
-                    "value": str(self.get_hum())
-                }
-            }
-        ]        
-
-            self.client.write_points(json_body)
-            self.client.write_points(json_body1)
-            result = self.client.query('select value from hum;')
-            #print result
-            time.sleep(60)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -73,7 +33,7 @@ def on_connect(client, userdata, flags, rc):
 
 client = mqtt.Client()
 client.on_connect = on_connect
-client.connect('vixman', 9001, 71)
+client.connect("localhost", 1883, 71)
 client.loop_start()
 
 try:
@@ -84,8 +44,11 @@ try:
         dht22_data['temperature'] = mon.get_temp()
         dht22_data['humidity'] = mon.get_hum()
         client.publish('/sensors/dht22/', json.dumps(dht22_data), 2)
-        time.sleep(60)        
+        print (mon.get_temp())
+        print (mon.get_hum())
+        print (type(dht22_data))
+        time.sleep(10)        
 except KeyboardInterrupt:
-    print "exiting"
+    print ("exiting")
     client.disconnect()
     client.loop_stop()
